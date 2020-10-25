@@ -10,12 +10,23 @@
 
 <style>
     #covid_mapa { width:100%; height: 60vw; }
-    .stylesel {
+    .stylesel, #inp-btn {
       background-color:#ffffff;
       border-radius:6px;
       border:1px solid #dcdcdc;
       display:inline-block;
       cursor:pointer;
+      color:#666666;
+      font-size:12px;
+      padding:3px 12px;
+      margin: 1px;
+      text-decoration:none;
+    }
+    #inp-geocode {
+      background-color:#ffffff;
+      border-radius:6px;
+      border:1px solid #dcdcdc;
+      display:inline-block;
       color:#666666;
       font-size:12px;
       padding:3px 12px;
@@ -33,6 +44,14 @@
   <button type="button" class="stylesel prazd_start">Začátek prázdnin</button> 
   <button type="button" class="stylesel velik">Velikonoce</button>
 </div>
+
+<form action="?" id='geocoder'>
+  <div class="inputs">
+      <input type="text" id="inp-geocode" placeholder="Zadejte obec či adresu...">
+      <input type="submit" id="inp-btn" value="Najít">
+  </div>
+</form>
+
 <div id='covid_mapa'></div>
 
 <script src="./mapa.js"></script>

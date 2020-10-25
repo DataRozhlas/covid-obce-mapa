@@ -108,3 +108,31 @@ document.querySelectorAll('.stylesel').forEach((butt) => {
     changeStyle(sel);
   });
 });
+
+const td = new Date();
+document.querySelectorAll('.aktual')[0].innerText += ` (${td.getDate() - 1}. ${td.getMonth() + 1}.)`;
+
+// geocoder
+const form = document.getElementById('geocoder');
+form.onsubmit = function submitForm(event) {
+  event.preventDefault();
+  const text = document.getElementById('inp-geocode').value;
+  if (text === '') {
+    return;
+  }
+  fetch(`https://api.mapy.cz/geocode?query=${text}, Česká republika`) // Mapy.cz geocoder
+    .then((res) => res.text())
+    .then((str) => (new window.DOMParser()).parseFromString(str, 'text/xml'))
+    .then((results) => {
+      const res = results.firstChild.children[0];
+
+      if (res.children.length === 0) {
+        return;
+      }
+      const x = parseFloat(res.children[0].attributes.x.value);
+      const y = parseFloat(res.children[0].attributes.y.value);
+
+      map.flyTo([y, x], 11);
+    })
+    .catch((err) => { throw err; });
+};
