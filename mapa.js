@@ -1,19 +1,19 @@
+/* eslint-disable no-restricted-globals */
 /* eslint-disable no-undef */
-const map = L.map('covid_mapa');
-map.setView([49.7417, 15.3350], 7);
+const map = L.map('covid_mapa', { scrollWheelZoom: false });
 const bg = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  attribution: '&copy; <a target="_blank" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, data <a target="_blank" href="https://www.uzis.cz/">ÚZIS</a>',
   subdomains: 'abcd',
-  maxZoom: 19,
+  maxZoom: 15,
 });
 
 bg.addTo(map);
 
-// extend Leaflet to create a GeoJSON layer from a TopoJSON file
 L.TopoJSON = L.GeoJSON.extend({
   addData(data) {
     let geojson; let key;
     if (data.type === 'Topology') {
+      // eslint-disable-next-line no-restricted-syntax
       for (key in data.objects) {
         if (data.objects.hasOwnProperty(key)) {
           geojson = topojson.feature(data, data.objects[key]);
@@ -30,28 +30,29 @@ L.topoJson = function (data, options) {
   return new L.TopoJSON(data, options);
 };
 
-function getCol(val) {
-  if (val <= 0.01) {
-    return 'blue';
-  }
-  return 'red';
-}
+const viewSel = ['aktual', 'tyden', 'dva', 'mesic', 'prazd_stop', 'prazd_start', 'velik'];
+actSel = 'aktual';
 
 let data = null;
 const geojson = L.topoJson(null, {
   style(feature) {
     const oid = feature.properties.kodob;
     return {
-      color: '#000',
+      color: 'lightgray',
       opacity: 1,
-      weight: 1,
-      fillColor: getCol(data[oid][1] / data[oid][8]),
+      weight: 0.5,
       fillOpacity: 0.8,
+      fillColor: getCol(oid, 'aktual'),
     };
   },
   onEachFeature(feature, layer) {
     const oid = feature.properties.kodob;
-    layer.bindPopup(`${data[oid][0]}<br>Aktuálně ${Math.round((data[oid][1] / data[oid][8]) * 10000) / 10} nakažených na tis. obyvatel`);
+    layer.on('click', (e) => {
+      const d = data[oid];
+      const val = Math.round((d[viewSel.indexOf(actSel) + 1] / d[8]) * 10000) / 10;
+      if ((val === Infinity) || (isNaN(val))) { return; }
+      layer.bindPopup(`<b>${d[0]}</b><br>${val} nakažených na tis. obyvatel`).openPopup();
+    });
   },
 });
 geojson.addTo(map);
@@ -71,5 +72,39 @@ fetch('./obce.json')
           return false;
         });
         geojson.addData(tjs);
+        map.fitBounds(geojson.getBounds());
+        if (screen.width < 600) {
+          map.zoomIn(1);
+        }
       });
   });
+
+function getCol(oid, view) {
+  const d = data[oid];
+  const val = (d[viewSel.indexOf(view) + 1] / d[8]) * 1000;
+
+  if ((val === Infinity) || (isNaN(val))) { return 'lightgray'; }
+
+  if (val < 1) { return '#fee5d9'; }
+  if (val < 5) { return '#fcae91'; }
+  if (val < 15) { return '#fb6a4a'; }
+  if (val < 25) { return '#de2d26'; }
+  return '#a50f15';
+}
+
+function changeStyle(view) {
+  geojson.eachLayer((layer) => {
+    const oid = layer.feature.properties.kodob;
+    layer.setStyle({
+      fillColor: getCol(oid, view),
+    });
+  });
+}
+
+document.querySelectorAll('.stylesel').forEach((butt) => {
+  butt.addEventListener('click', (e) => {
+    const sel = e.target.className.split(' ')[1];
+    actSel = sel;
+    changeStyle(sel);
+  });
+});

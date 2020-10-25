@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no" />
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="anonymous" />
 
@@ -8,9 +9,30 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js" integrity="sha512-4UKI/XKm3xrvJ6pZS5oTRvIQGIzZFoXR71rRBb1y2N+PbwAsKa5tPl2J6WvbEvwN3TxQCm8hMzsl/pO+82iRlg==" crossorigin="anonymous"></script>
 
 <style>
-    #covid_mapa { width:100%; height: 500px; }
-  </style>
+    #covid_mapa { width:100%; height: 60vw; }
+    .stylesel {
+      background-color:#ffffff;
+      border-radius:6px;
+      border:1px solid #dcdcdc;
+      display:inline-block;
+      cursor:pointer;
+      color:#666666;
+      font-size:12px;
+      padding:3px 12px;
+      margin: 1px;
+      text-decoration:none;
+    }
+</style>
 
+<div id="style_select">
+  <button type="button" class="stylesel aktual">Aktuální stav</button> 
+  <button type="button" class="stylesel tyden">Před týdnem</button> 
+  <button type="button" class="stylesel dva">Před dvěma týdny</button> 
+  <button type="button" class="stylesel mesic">Před měsícem</button> 
+  <button type="button" class="stylesel prazd_stop">Konec prázdnin</button> 
+  <button type="button" class="stylesel prazd_start">Začátek prázdnin</button> 
+  <button type="button" class="stylesel velik">Velikonoce</button>
+</div>
 <div id='covid_mapa'></div>
 
 <script src="./mapa.js"></script>
