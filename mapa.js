@@ -57,7 +57,7 @@ const geojson = L.topoJson(null, {
 });
 geojson.addTo(map);
 
-fetch('./obce.json')
+fetch('https://data.irozhlas.cz/covid-obce-mapa/obce.json')
   .then((response) => response.json())
   .then((tjs) => {
     fetch('https://data.irozhlas.cz/covid-uzis/obce_mapa.json')
