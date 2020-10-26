@@ -69,6 +69,7 @@ fetch('https://data.irozhlas.cz/covid-obce-mapa/obce.json')
         data = dta.data;
         updated = dta.upd;
         breaks = dta.brks;
+        document.querySelectorAll('.aktual')[0].innerText += ` (${updated.split('-')[2]}. ${updated.split('-')[1]}.)`;
         const dkeys = Object.keys(data);
         tjs.objects.obce.geometries = tjs.objects.obce.geometries.filter((ob) => {
           if (dkeys.includes(ob.properties.kodob.toString())) {
@@ -90,10 +91,10 @@ function getCol(oid, view) {
 
   if ((val === Infinity) || (isNaN(val))) { return 'lightgray'; }
 
-  if (val < 1) { return '#fee5d9'; }
-  if (val < 5) { return '#fcae91'; }
-  if (val < 15) { return '#fb6a4a'; }
-  if (val < 25) { return '#de2d26'; }
+  if (val < breaks[0]) { return '#fee5d9'; }
+  if (val < breaks[1]) { return '#fcae91'; }
+  if (val < breaks[2]) { return '#fb6a4a'; }
+  if (val < breaks[3]) { return '#de2d26'; }
   return '#a50f15';
 }
 
@@ -114,8 +115,6 @@ document.querySelectorAll('.stylesel').forEach((butt) => {
   });
 });
 
-const td = new Date();
-document.querySelectorAll('.aktual')[0].innerText += ` (${td.getDate() - 1}. ${td.getMonth() + 1}.)`;
 
 // geocoder
 const form = document.getElementById('geocoder');
