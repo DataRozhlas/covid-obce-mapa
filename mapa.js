@@ -34,6 +34,9 @@ const viewSel = ['aktual', 'tyden', 'dva', 'mesic', 'prazd_stop', 'prazd_start',
 actSel = 'aktual';
 
 let data = null;
+let breaks = null;
+let updated = null;
+
 const geojson = L.topoJson(null, {
   style(feature) {
     const oid = feature.properties.kodob;
@@ -63,7 +66,9 @@ fetch('https://data.irozhlas.cz/covid-obce-mapa/obce.json')
     fetch('https://data.irozhlas.cz/covid-uzis/obce_mapa.json')
       .then((response) => response.json())
       .then((dta) => {
-        data = dta;
+        data = dta.data;
+        updated = dta.upd;
+        breaks = dta.brks;
         const dkeys = Object.keys(data);
         tjs.objects.obce.geometries = tjs.objects.obce.geometries.filter((ob) => {
           if (dkeys.includes(ob.properties.kodob.toString())) {
