@@ -7,6 +7,8 @@ const bg = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light
   maxZoom: 15,
 });
 
+map.on('click', () => map.scrollWheelZoom.enable());
+
 bg.addTo(map);
 
 L.TopoJSON = L.GeoJSON.extend({
@@ -89,12 +91,12 @@ function getCol(oid, view) {
   const d = data[oid];
   const val = (d[viewSel.indexOf(view) + 1] / d[8]) * 1000;
 
-  if ((val === Infinity) || (isNaN(val))) { return 'lightgray'; }
+  if ((val === Infinity) || (isNaN(val)) || (val < 0)) { return 'lightgray'; }
 
-  if (val < breaks[0]) { return '#fee5d9'; }
-  if (val < breaks[1]) { return '#fcae91'; }
-  if (val < breaks[2]) { return '#fb6a4a'; }
-  if (val < breaks[3]) { return '#de2d26'; }
+  if (val <= breaks[0]) { return '#fee5d9'; }
+  if (val <= breaks[1]) { return '#fcae91'; }
+  if (val <= breaks[2]) { return '#fb6a4a'; }
+  if (val <= breaks[3]) { return '#de2d26'; }
   return '#a50f15';
 }
 
