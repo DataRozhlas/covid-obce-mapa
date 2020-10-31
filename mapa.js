@@ -7,6 +7,21 @@ const bg = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light
   maxZoom: 15,
 });
 
+// varování, že někdy nedochází k odškrtávání vyléčených, vyšetřujeme
+const legend = L.control({ position: 'bottomleft' });
+legend.onAdd = function (map) {
+  const div = L.DomUtil.create('div', 'info legend');
+  div.style.color = '#a50f15';
+  div.style.backgroundColor = 'white';
+  div.style.padding = '5px';
+  div.style.borderRadius = '6px';
+  div.style.border = '1px solid #dcdcdc';
+  div.innerHTML = 'Oficiální data v některých obcích pravděpodobně nezapočítávají vyléčené, aktuální počet nakažených tak může být ve skutečnosti nižší než v mapě. Na ověření čísel pracujeme.';
+  return div;
+};
+legend.addTo(map);
+// /varování
+
 map.on('click', () => map.scrollWheelZoom.enable());
 
 bg.addTo(map);
