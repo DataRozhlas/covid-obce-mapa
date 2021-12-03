@@ -1,7 +1,6 @@
-/* eslint-disable no-restricted-globals */
 /* eslint-disable no-undef */
 let host = 'https://data.irozhlas.cz';
-if (location.hostname === 'localhost') { host = 'http://localhost'; }
+if (window.location.hostname === 'localhost') { host = 'http://localhost'; }
 
 const map = L.map('covid_mapa', { scrollWheelZoom: false });
 const bg = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
@@ -19,7 +18,7 @@ L.TopoJSON = L.GeoJSON.extend({
     if (data.type === 'Topology') {
       // eslint-disable-next-line no-restricted-syntax
       for (key in data.objects) {
-        if (data.objects.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(data.objects, key)) {
           geojson = topojson.feature(data, data.objects[key]);
           L.GeoJSON.prototype.addData.call(this, geojson);
         }
@@ -40,7 +39,7 @@ let updated = null;
 function getCol(prop) {
   const d = data[prop.kod];
   const nak = (d[0] / prop.obv) * 10000;
-  if ((nak === Infinity) || (isNaN(nak)) || (nak < 0)) { return 'lightgray'; }
+  if ((nak === Infinity) || (Number.isNaN(nak)) || (nak < 0)) { return 'lightgray'; }
 
   if (nak <= breaks[0]) { return '#fee5d9'; }
   if (nak <= breaks[1]) { return '#fcae91'; }
@@ -65,14 +64,15 @@ const geojson = L.topoJson(null, {
     const prop = feature.properties;
     layer.on('click', () => {
       const d = data[prop.kod];
-      const val = Math.round((d[0] / prop.obv) * 100000) / 10;
-      if ((val === Infinity) || (isNaN(val))) { return; }
+      const val = Math.round((d[0] / prop.obv) * 10000);
+      if ((val === Infinity) || (Number.isNaN(val))) { return; }
       layer.bindPopup(`<b>${prop.ob} (okres ${prop.ok})</b><br>${val} aktuálně nemocných na 10 tis. obyvatel`).openPopup();
     });
   },
 });
 geojson.addTo(map);
 
+/*
 function changeStyle(view) {
   geojson.eachLayer((layer) => {
     const oid = layer.feature.properties.kod;
@@ -81,6 +81,7 @@ function changeStyle(view) {
     });
   });
 }
+*/
 
 fetch(`${host}/covid-obce-mapa/obce.json`)
   .then((response) => response.json())
@@ -90,11 +91,11 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
       .then((dta) => {
         data = dta.data;
         const u = dta.upd.split('-');
-        updated = `${parseInt(u[2])}. ${parseInt(u[1])}. ${u[0].slice(2)}`;
+        updated = `${parseInt(u[2], 10)}. ${parseInt(u[1], 10)}. ${u[0].slice(2)}`;
 
         breaks = dta.brks;
         const dkeys = Object.keys(data);
-        tjs.objects.ob.geometries = tjs.objects.ob.geometries.filter((ob) => {
+        tjs.objects.ob.geometries.filter((ob) => {
           if (dkeys.includes(ob.properties.kod.toString())) {
             return true;
           }
@@ -107,7 +108,7 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
         const legend = L.control({ position: 'bottomleft' });
         legend.onAdd = () => {
           const div = L.DomUtil.create('div', 'info legend');
-          div.innerHTML = `Aktuálně nemocní na 10. tis. obyvatel<br>${Math.round(breaks[0] * 10) / 10} <span class="legendcol"></span>${Math.round(breaks[3] * 10) / 10}<br><i>aktualizováno ${updated}</i>`;
+          div.innerHTML = `Aktuálně nemocní na 10. tis. obyvatel<br>${Math.round(breaks[0])} <span class="legendcol"></span>${Math.round(breaks[3])}+<br><i>aktualizováno ${updated}</i>`;
           return div;
         };
         legend.addTo(map);
