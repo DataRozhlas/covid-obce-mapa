@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable no-undef */
-let host = 'https://data.irozhlas.cz'
-if (location.hostname === 'localhost') { host = 'http://localhost' }
+let host = 'https://data.irozhlas.cz';
+if (location.hostname === 'localhost') { host = 'http://localhost'; }
 
 const map = L.map('covid_mapa', { scrollWheelZoom: false });
 const bg = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
@@ -30,15 +30,26 @@ L.TopoJSON = L.GeoJSON.extend({
     return this;
   },
 });
-L.topoJson = function (data, options) {
-  return new L.TopoJSON(data, options);
-};
 
-actSel = 'aktual';
+L.topoJson = (data, options) => new L.TopoJSON(data, options);
 
 let data = null;
 let breaks = null;
 let updated = null;
+
+function getCol(prop) {
+  const d = data[prop.kod];
+  const nak = (d[0] / prop.obv) * 10000;
+  if ((nak === Infinity) || (isNaN(nak)) || (nak < 0)) { return 'lightgray'; }
+
+  if (nak <= breaks[0]) { return '#fee5d9'; }
+  if (nak <= breaks[1]) { return '#fcae91'; }
+  if (nak <= breaks[2]) { return '#fb6a4a'; }
+  if (nak <= breaks[3]) { return '#de2d26'; }
+  return '#a50f15';
+}
+
+actSel = 'aktual';
 
 const geojson = L.topoJson(null, {
   style(feature) {
@@ -52,7 +63,7 @@ const geojson = L.topoJson(null, {
   },
   onEachFeature(feature, layer) {
     const prop = feature.properties;
-    layer.on('click', (e) => {
+    layer.on('click', () => {
       const d = data[prop.kod];
       const val = Math.round((d[0] / prop.obv) * 100000) / 10;
       if ((val === Infinity) || (isNaN(val))) { return; }
@@ -62,6 +73,15 @@ const geojson = L.topoJson(null, {
 });
 geojson.addTo(map);
 
+function changeStyle(view) {
+  geojson.eachLayer((layer) => {
+    const oid = layer.feature.properties.kod;
+    layer.setStyle({
+      fillColor: getCol(oid, view),
+    });
+  });
+}
+
 fetch(`${host}/covid-obce-mapa/obce.json`)
   .then((response) => response.json())
   .then((tjs) => {
@@ -69,7 +89,7 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
       .then((response) => response.json())
       .then((dta) => {
         data = dta.data;
-        const u = dta.upd.split('-')
+        const u = dta.upd.split('-');
         updated = `${parseInt(u[2])}. ${parseInt(u[1])}. ${u[0].slice(2)}`;
 
         breaks = dta.brks;
@@ -85,7 +105,7 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
 
         // legenda
         const legend = L.control({ position: 'bottomleft' });
-        legend.onAdd = function (map) {
+        legend.onAdd = () => {
           const div = L.DomUtil.create('div', 'info legend');
           div.innerHTML = `Aktuálně nemocní na 10. tis. obyvatel<br>${Math.round(breaks[0] * 10) / 10} <span class="legendcol"></span>${Math.round(breaks[3] * 10) / 10}<br><i>aktualizováno ${updated}</i>`;
           return div;
@@ -94,31 +114,9 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
       });
   });
 
-function getCol(prop, view) {
-  const d = data[prop.kod];
-  const nak = (d[0] / prop.obv) * 10000;
-  if ((nak === Infinity) || (isNaN(nak)) || (nak < 0)) { return 'lightgray'; }
-
-  if (nak <= breaks[0]) { return '#fee5d9'; }
-  if (nak <= breaks[1]) { return '#fcae91'; }
-  if (nak <= breaks[2]) { return '#fb6a4a'; }
-  if (nak <= breaks[3]) { return '#de2d26'; }
-  return '#a50f15';
-}
-
-function changeStyle(view) {
-  geojson.eachLayer((layer) => {
-    const oid = layer.feature.properties.kod;
-    layer.setStyle({
-      fillColor: getCol(oid, view),
-    });
-  });
-}
-
-
-var gcd = L.control({ position: 'topleft' });
-gcd.onAdd = function (map) {
-  var div = L.DomUtil.create('div', 'info geocoder');
+const gcd = L.control({ position: 'topright' });
+gcd.onAdd = () => {
+  const div = L.DomUtil.create('div', 'info geocoder');
   div.innerHTML = `<form action="?" id='geocoder'>
     <div class="inputs">
       <input type="text" id="inp-geocode" placeholder="Zadejte obec či adresu...">
