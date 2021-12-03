@@ -10,8 +10,6 @@ const bg = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light
   maxZoom: 15,
 });
 
-
-
 map.on('click', () => map.scrollWheelZoom.enable());
 bg.addTo(map);
 
@@ -84,9 +82,6 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
         });
         geojson.addData(tjs);
         map.fitBounds(geojson.getBounds());
-        if (screen.width < 600) {
-          map.zoomIn(1);
-        }
 
         // legenda
         const legend = L.control({ position: 'bottomleft' });
