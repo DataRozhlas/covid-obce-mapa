@@ -15,8 +15,33 @@ pso = pd.read_excel('Vek_Praha2000.xlsx', sheet_name='Správní obvody')
 pso['ZUJ'] = pso['Obec'].apply(lambda x: so[x])
 pso['Okres'] = 'Praha'
 
+# %%
+pso[['65-69', '70-74', '75-79', '80-84', '85+']]
+
 d = d.append(pso)
 # %%
 sel = d[d.POH == 'celkem'][['ZUJ', 'Obec', 'Okres', 'Celkem']]
 # %%
 sel.to_csv('./data.csv', index=False, encoding='utf-8')
+# %%
+d
+# %%
+list(d.columns)
+# %%
+pso
+# %%
+cfuck = list(map(str, list(range(65, 85))))
+# %%
+cfuck.extend(['65-69', '70-74', '75-79', '80-84', '85+', '85+.1'])
+# %%
+cfuck
+# %%
+d['vek65+'] = d[cfuck].sum(axis=1)
+# %%
+d[[65]]
+# %%
+d.columns = list(map(str, d.columns))
+# %%
+sel = d[d.POH == 'celkem'][['ZUJ', 'Obec', 'Okres', 'vek65+']]
+sel.to_csv('./data65.csv', index=False, encoding='utf-8')
+# %%
