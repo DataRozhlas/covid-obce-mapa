@@ -2,7 +2,35 @@
 let host = 'https://data.irozhlas.cz';
 if (window.location.hostname === 'localhost') { host = 'http://localhost'; }
 
-const map = L.map('covid_mapa', { scrollWheelZoom: false });
+
+const container = document.getElementById('covid_mapa');
+
+const mapTitle = document.createElement('div')
+mapTitle.id = 'cmap-title'
+
+const gcd = document.createElement('div')
+gcd.id = 'cmap-geocoder'
+gcd.innerHTML = `<form action="?" id="geocoder">
+                  <div class="inputs">
+                    <input type="text" id="inp-geocode" placeholder="Zadejte obec či adresu...">
+                    <input type="submit" id="inp-btn" value="Najít">
+                  </div>
+                  </form>`
+
+const mapTtip = document.createElement('div');
+mapTtip.id = 'cmap-ttip'
+mapTtip.innerHTML = '<i>Vyberte obec.</i>'
+
+const mapDiv = document.createElement('div');
+mapDiv.id = 'cmap-map'
+
+const legend = document.createElement('div');
+legend.id = 'cmap-legend'
+
+container.append(mapTitle, gcd, mapTtip, mapDiv, legend);
+
+
+const map = L.map('cmap-map', { scrollWheelZoom: false });
 const bg = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
   attribution: '&copy; <a target="_blank" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, covid data <a target="_blank" href="https://www.uzis.cz/">ÚZIS</a>, počty obyvatel <a target="_blank" href="https://vdb.czso.cz/vdbvo2/">ČSÚ</a>',
   subdomains: 'abcd',
@@ -66,22 +94,11 @@ const geojson = L.topoJson(null, {
       const d = data[prop.kod];
       const val = Math.round((d[0] / prop.obv) * 10000);
       if ((val === Infinity) || (Number.isNaN(val))) { return; }
-      layer.bindPopup(`<b>${prop.ob} (okres ${prop.ok})</b><br>${val} aktuálně nemocných na 10 tis. obyvatel`).openPopup();
+      mapTtip.innerHTML = `<b>${prop.ob} (okres ${prop.ok})</b><br>${val} nemocných na 10 tis. ob.`
     });
   },
 });
 geojson.addTo(map);
-
-/*
-function changeStyle(view) {
-  geojson.eachLayer((layer) => {
-    const oid = layer.feature.properties.kod;
-    layer.setStyle({
-      fillColor: getCol(oid, view),
-    });
-  });
-}
-*/
 
 fetch(`${host}/covid-obce-mapa/obce.json`)
   .then((response) => response.json())
@@ -92,6 +109,8 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
         data = dta.data;
         const u = dta.upd.split('-');
         updated = `${parseInt(u[2], 10)}. ${parseInt(u[1], 10)}. ${u[0].slice(2)}`;
+
+        mapTitle.innerText = `Aktuálně nemocní k ${updated}`
 
         breaks = dta.brks;
         const dkeys = Object.keys(data);
@@ -105,28 +124,9 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
         map.fitBounds(geojson.getBounds());
 
         // legenda
-        const legend = L.control({ position: 'bottomleft' });
-        legend.onAdd = () => {
-          const div = L.DomUtil.create('div', 'info legend');
-          div.innerHTML = `Aktuálně nemocní na 10. tis. obyvatel<br>${Math.round(breaks[0])} <span class="legendcol"></span>${Math.round(breaks[3])}+<br><i>aktualizováno ${updated}</i>`;
-          return div;
-        };
-        legend.addTo(map);
+        legend.innerHTML = `${Math.round(breaks[0])} <span class="legendcol"></span>${Math.round(breaks[3])}+`;
       });
   });
-
-const gcd = L.control({ position: 'topright' });
-gcd.onAdd = () => {
-  const div = L.DomUtil.create('div', 'info geocoder');
-  div.innerHTML = `<form action="?" id='geocoder'>
-    <div class="inputs">
-      <input type="text" id="inp-geocode" placeholder="Zadejte obec či adresu...">
-      <input type="submit" id="inp-btn" value="Najít">
-    </div>
-  </form>`;
-  return div;
-};
-gcd.addTo(map);
 
 // geocoder
 const form = document.getElementById('geocoder');

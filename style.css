@@ -1,7 +1,25 @@
 #covid_mapa {
     width: 100%;
+    margin-bottom: 10px;
+  }
+
+  #cmap-map {
+    width: 100%;
     padding-top: 55%;
   }
+
+  #cmap-ttip {
+    font-size: 12px;
+  }
+
+  #cmap-title {
+    text-align: center;
+  }
+
+  #cmap-legend {
+    font-size: 12px;
+  }
+
 
   .stylesel,
   #inp-btn {
@@ -33,7 +51,7 @@
     width: 130px;
     display: inline-block;
     background-image: linear-gradient(to right, #fee5d9, #a50f15);
-    height: 18px;
+    height: 14px;
     margin-left: 2px;
     margin-right: 2px;
   }
