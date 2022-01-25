@@ -9,6 +9,7 @@
   }
 
   #cmap-ttip {
+    height: 40px;
     font-size: 12px;
   }
 
@@ -19,7 +20,6 @@
   #cmap-legend {
     font-size: 12px;
   }
-
 
   .stylesel,
   #inp-btn {

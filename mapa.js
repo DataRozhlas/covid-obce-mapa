@@ -29,13 +29,26 @@ legend.id = 'cmap-legend'
 
 container.append(mapTitle, gcd, mapTtip, mapDiv, legend);
 
-
-const map = L.map('cmap-map', { scrollWheelZoom: false });
+const map = L.map('cmap-map', { 
+  scrollWheelZoom: false,
+  maxBoundsViscosity: 0.8
+ });
 const bg = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
   attribution: '&copy; <a target="_blank" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, covid data <a target="_blank" href="https://www.uzis.cz/">ÚZIS</a>, počty obyvatel <a target="_blank" href="https://vdb.czso.cz/vdbvo2/">ČSÚ</a>',
   subdomains: 'abcd',
   maxZoom: 15,
 });
+
+map.createPane('geonames');
+map.getPane('geonames').style.zIndex = 1000;
+map.getPane('geonames').style.pointerEvents = 'none';
+
+const geonames = L.tileLayer('https://samizdat.cz/tiles/ton_l2/{z}/{x}/{y}.png', {
+  maxZoom: 15,
+  pane: 'geonames',
+});
+
+geonames.addTo(map);
 
 map.on('click', () => map.scrollWheelZoom.enable());
 bg.addTo(map);
@@ -81,7 +94,7 @@ actSel = 'aktual';
 const geojson = L.topoJson(null, {
   style(feature) {
     return {
-      color: 'lightgray',
+      color: getCol(feature.properties, 'aktual'),
       opacity: 1,
       weight: 0.5,
       fillOpacity: 0.8,
@@ -122,12 +135,17 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
         });
         geojson.addData(tjs);
         map.fitBounds(geojson.getBounds());
+        map.setMaxBounds(geojson.getBounds())
+        map.setMinZoom(map.getZoom())
+
+
 
         // legenda
-        legend.innerHTML = `${Math.round(breaks[0])} <span class="legendcol"></span>${Math.round(breaks[3])}+`;
+        legend.innerHTML = `${Math.round(breaks[0])} <span class="legendcol"></span> ${Math.round(breaks[3])}+ (na 10. tis. obyvatel)`;
       });
   });
 
+  
 // geocoder
 const form = document.getElementById('geocoder');
 form.onsubmit = function submitForm(event) {
