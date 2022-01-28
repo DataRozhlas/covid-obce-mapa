@@ -31,27 +31,25 @@ container.append(mapTitle, gcd, mapTtip, mapDiv, legend);
 
 const map = L.map('cmap-map', { 
   scrollWheelZoom: false,
-  maxBoundsViscosity: 0.8
+  maxBoundsViscosity: 0.8,
+  
  });
-const bg = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a target="_blank" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, covid data <a target="_blank" href="https://www.uzis.cz/">ÚZIS</a>, počty obyvatel <a target="_blank" href="https://vdb.czso.cz/vdbvo2/">ČSÚ</a>',
-  subdomains: 'abcd',
-  maxZoom: 15,
-});
+
+ map.attributionControl.addAttribution('&copy; <a target="_blank" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, covid data <a target="_blank" href="https://www.uzis.cz/">ÚZIS</a>, počty obyvatel <a target="_blank" href="https://vdb.czso.cz/vdbvo2/">ČSÚ</a>');
+
 
 map.createPane('geonames');
 map.getPane('geonames').style.zIndex = 1000;
 map.getPane('geonames').style.pointerEvents = 'none';
 
-const geonames = L.tileLayer('https://samizdat.cz/tiles/ton_l2/{z}/{x}/{y}.png', {
-  maxZoom: 15,
-  pane: 'geonames',
-});
-
-geonames.addTo(map);
+var wmsLayer = L.tileLayer.wms('https://geoportal.cuzk.cz/WMS_GEONAMES_PUB/service.svc/get?', {
+    layers: 'GN1,GN2,GN12,GN19,GN22,BGN1,BGN2,BGN12,BGN19',
+    format: 'image/png',
+    transparent: true,
+    version: '1.3.0',
+}).addTo(map);
 
 map.on('click', () => map.scrollWheelZoom.enable());
-bg.addTo(map);
 
 L.TopoJSON = L.GeoJSON.extend({
   addData(data) {
@@ -103,7 +101,12 @@ const geojson = L.topoJson(null, {
   },
   onEachFeature(feature, layer) {
     const prop = feature.properties;
-    layer.on('click', () => {
+    layer.on('click', (e) => {
+      geojson.resetStyle();
+      e.target.setStyle({
+        'color': '#9ecae1',
+        'weight': 2,
+      });
       const d = data[prop.kod];
       const val = Math.round((d[0] / prop.obv) * 10000);
       if ((val === Infinity) || (Number.isNaN(val))) { return; }

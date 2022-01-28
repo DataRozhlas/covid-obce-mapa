@@ -9,6 +9,15 @@
     padding-top: 60%;
   }
 
+  .leaflet-container {
+    background: white;
+    outline: 0;
+  }
+
+  .leaflet-control-attribution {
+    background: white !important;
+  }
+
   #cmap-ttip {
     height: 40px;
     font-size: 12px;
@@ -19,7 +28,12 @@
   }
 
   #cmap-legend {
+    margin-top: 10px;
     font-size: 12px;
+  }
+
+  .inputs {
+    display: inline-block;
   }
 
   .stylesel,
