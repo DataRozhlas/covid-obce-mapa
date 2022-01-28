@@ -15,7 +15,14 @@ gcd.innerHTML = `<form action="?" id="geocoder">
                     <input type="text" id="inp-geocode" placeholder="Zadejte obec či adresu...">
                     <input type="submit" id="inp-btn" value="Najít">
                   </div>
-                  </form>`
+                  </form>
+                  <form action="?" id="reset-zoom">
+                  <div class="inputs">
+                    <input type="submit" id="inp-btn" value="&#8962;">
+                  </div>
+                  </form>
+                  
+                  `
 
 const mapTtip = document.createElement('div');
 mapTtip.id = 'cmap-ttip'
@@ -32,22 +39,9 @@ container.append(mapTitle, gcd, mapTtip, mapDiv, legend);
 const map = L.map('cmap-map', { 
   scrollWheelZoom: false,
   maxBoundsViscosity: 0.8,
-  
  });
 
  map.attributionControl.addAttribution('&copy; <a target="_blank" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, covid data <a target="_blank" href="https://www.uzis.cz/">ÚZIS</a>, počty obyvatel <a target="_blank" href="https://vdb.czso.cz/vdbvo2/">ČSÚ</a>');
-
-
-map.createPane('geonames');
-map.getPane('geonames').style.zIndex = 1000;
-map.getPane('geonames').style.pointerEvents = 'none';
-
-var wmsLayer = L.tileLayer.wms('https://geoportal.cuzk.cz/WMS_GEONAMES_PUB/service.svc/get?', {
-    layers: 'GN1,GN2,GN12,GN19,GN22,BGN1,BGN2,BGN12,BGN19',
-    format: 'image/png',
-    transparent: true,
-    version: '1.3.0',
-}).addTo(map);
 
 map.on('click', () => map.scrollWheelZoom.enable());
 
@@ -141,12 +135,16 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
         map.setMaxBounds(geojson.getBounds())
         map.setMinZoom(map.getZoom())
 
-
-
         // legenda
         legend.innerHTML = `${Math.round(breaks[0])} <span class="legendcol"></span> ${Math.round(breaks[3])}+ (na 10. tis. obyvatel)`;
       });
   });
+
+const form_res = document.getElementById('reset-zoom');
+form_res.onsubmit = function submitForm(event) {
+  event.preventDefault();
+  map.fitBounds(geojson.getBounds(), { animate: false });
+};
 
   
 // geocoder
@@ -169,7 +167,7 @@ form.onsubmit = function submitForm(event) {
       const x = parseFloat(res.children[0].attributes.x.value);
       const y = parseFloat(res.children[0].attributes.y.value);
 
-      map.flyTo([y, x], 11);
+      map.flyTo([y, x], 11, { animate: false });
     })
     .catch((err) => { throw err; });
 };
