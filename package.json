@@ -1,17 +1,25 @@
 {
   "name": "covid-obce-mapa",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^7.11.0",
-    "eslint-config-airbnb-base": "^14.2.0",
-    "eslint-plugin-import": "^2.22.1"
+    "eslint": "^8.7.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.4"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DataRozhlas/covid-obce-mapa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DataRozhlas/covid-obce-mapa/issues"
+  },
+  "homepage": "https://github.com/DataRozhlas/covid-obce-mapa#readme",
+  "description": ""
 }

@@ -2,14 +2,13 @@
 let host = 'https://data.irozhlas.cz';
 if (window.location.hostname === 'localhost') { host = 'http://localhost'; }
 
-
 const container = document.getElementById('covid_mapa');
 
-const mapTitle = document.createElement('div')
-mapTitle.id = 'cmap-title'
+const mapTitle = document.createElement('div');
+mapTitle.id = 'cmap-title';
 
-const gcd = document.createElement('div')
-gcd.id = 'cmap-geocoder'
+const gcd = document.createElement('div');
+gcd.id = 'cmap-geocoder';
 gcd.innerHTML = `<form action="?" id="geocoder">
                   <div class="inputs">
                     <input type="text" id="inp-geocode" placeholder="Zadejte obec či adresu...">
@@ -22,26 +21,38 @@ gcd.innerHTML = `<form action="?" id="geocoder">
                   </div>
                   </form>
                   
-                  `
+                  `;
 
 const mapTtip = document.createElement('div');
-mapTtip.id = 'cmap-ttip'
-mapTtip.innerHTML = '<i>Vyberte obec.</i>'
+mapTtip.id = 'cmap-ttip';
+mapTtip.innerHTML = '<i>Vyberte obec.</i>';
 
 const mapDiv = document.createElement('div');
-mapDiv.id = 'cmap-map'
+mapDiv.id = 'cmap-map';
 
 const legend = document.createElement('div');
-legend.id = 'cmap-legend'
+legend.id = 'cmap-legend';
 
 container.append(mapTitle, gcd, mapTtip, mapDiv, legend);
 
-const map = L.map('cmap-map', { 
+const map = L.map('cmap-map', {
   scrollWheelZoom: false,
   maxBoundsViscosity: 0.8,
- });
+  zoomAnimation: false,
+});
 
- map.attributionControl.addAttribution('&copy; <a target="_blank" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, covid data <a target="_blank" href="https://www.uzis.cz/">ÚZIS</a>, počty obyvatel <a target="_blank" href="https://vdb.czso.cz/vdbvo2/">ČSÚ</a>');
+map.attributionControl.addAttribution('&copy; <a target="_blank" href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, covid data <a target="_blank" href="https://www.uzis.cz/">ÚZIS</a>, počty obyvatel <a target="_blank" href="https://vdb.czso.cz/vdbvo2/">ČSÚ</a>');
+
+map.createPane('geonames');
+map.getPane('geonames').style.zIndex = 1000;
+map.getPane('geonames').style.pointerEvents = 'none';
+
+const geonames = L.tileLayer('https://samizdat.cz/tiles/ton_l2/{z}/{x}/{y}.png', {
+  maxZoom: 15,
+  pane: 'geonames',
+});
+
+geonames.addTo(map);
 
 map.on('click', () => map.scrollWheelZoom.enable());
 
@@ -98,13 +109,13 @@ const geojson = L.topoJson(null, {
     layer.on('click', (e) => {
       geojson.resetStyle();
       e.target.setStyle({
-        'color': '#9ecae1',
-        'weight': 2,
+        color: '#9ecae1',
+        weight: 2,
       });
       const d = data[prop.kod];
       const val = Math.round((d[0] / prop.obv) * 10000);
       if ((val === Infinity) || (Number.isNaN(val))) { return; }
-      mapTtip.innerHTML = `<b>${prop.ob} (okres ${prop.ok})</b><br>${val} nemocných na 10 tis. ob.`
+      mapTtip.innerHTML = `<b>${prop.ob} (okres ${prop.ok})</b><br>${val} nemocných na 10 tis. ob.`;
     });
   },
 });
@@ -120,7 +131,7 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
         const u = dta.upd.split('-');
         updated = `${parseInt(u[2], 10)}. ${parseInt(u[1], 10)}. ${u[0].slice(2)}`;
 
-        mapTitle.innerText = `Aktuálně nemocní k ${updated}`
+        mapTitle.innerText = `Aktuálně nemocní k ${updated}`;
 
         breaks = dta.brks;
         const dkeys = Object.keys(data);
@@ -132,21 +143,20 @@ fetch(`${host}/covid-obce-mapa/obce.json`)
         });
         geojson.addData(tjs);
         map.fitBounds(geojson.getBounds());
-        map.setMaxBounds(geojson.getBounds())
-        map.setMinZoom(map.getZoom())
+        map.setMaxBounds(geojson.getBounds());
+        map.setMinZoom(map.getZoom());
 
         // legenda
         legend.innerHTML = `${Math.round(breaks[0])} <span class="legendcol"></span> ${Math.round(breaks[3])}+ (na 10. tis. obyvatel)`;
       });
   });
 
-const form_res = document.getElementById('reset-zoom');
-form_res.onsubmit = function submitForm(event) {
+const formRes = document.getElementById('reset-zoom');
+formRes.onsubmit = function submitForm(event) {
   event.preventDefault();
   map.fitBounds(geojson.getBounds(), { animate: false });
 };
 
-  
 // geocoder
 const form = document.getElementById('geocoder');
 form.onsubmit = function submitForm(event) {
